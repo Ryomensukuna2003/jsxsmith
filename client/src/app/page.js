@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useChat } from "ai/react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -15,13 +15,34 @@ import {
   ResizablePanel,
   ResizablePanelGroup,
 } from "@/components/ui/resizable"
+import { useSession, signIn, signOut } from "next-auth/react"
 
 export default function AICodeInterface() {
+  const { data: session } = useSession()
   const { messages, input, handleInputChange, handleSubmit, isLoading } = useChat()
   const [generatedCode, setGeneratedCode] = useState("")
   const [activeTab, setActiveTab] = useState("preview")
   const [copied, setCopied] = useState(false)
   const [selectedTemplate, setSelectedTemplate] = useState(null)
+
+  // Store user in database when they sign in
+  useEffect(() => {
+    if (session?.user?.email) {
+      fetch('/api/user', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      })
+        .then(res => res.json())
+        .then(data => {
+          if (data.isNewUser) {
+            console.log('New user stored in database:', data.user)
+          }
+        })
+        .catch(error => console.error('Error storing user:', error))
+    }
+  }, [session])
 
   // Template examples for demonstration
   const codeTemplates = [
@@ -228,8 +249,21 @@ function App() {
         <div className="text-2xl border-2 flex justify-between p-2 bg-white">
           <div>Logo</div>
           <div className="flex gap-4">
-            <Button variant={"solid"}>Login</Button>
-            <Button>Signup</Button>
+          {
+            session ? (
+              <>
+                <div className="flex self-center text-gray-700 text-sm">Welcome, {session.user.name}</div>
+                <img
+                  src={session.user.image}
+                  alt="User Avatar"
+                  className="w-8 h-8 rounded-full"
+                />
+                <Button variant="outline" onClick={() => signOut()}>Logout</Button>
+              </>
+            ) : (
+              <Button variant="outline" onClick={() => signIn()}>Login</Button>
+            )
+          }
           </div>
         </div>
 

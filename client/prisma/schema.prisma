@@ -8,16 +8,21 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+// Simplified User model
 model User {
-  id           String    @id @default(uuid()) // UUID is useful in distributed systems
-  email        String    @unique 
-  passwordHash String
-  sessions     Session[] // Each user can have multiple sessions
-  createdAt    DateTime  @default(now())
+  id            String    @id @default(cuid())
+  name          String?
+  email         String?   @unique
+  image         String?
+  createdAt     DateTime  @default(now())
+  
+  // Your app-specific relations
+  appSessions   AppSession[]
 }
 
-model Session {
-  id        String         @id @default(uuid()) // Session ID
+// Your App-Specific Models
+model AppSession {
+  id        String         @id @default(uuid())
   user      User           @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId    String
   name      String?
@@ -28,11 +33,10 @@ model Session {
   updatedAt DateTime       @updatedAt
 }
 
-// Every chat message has its session ID to link it to a session
 model Chat {
   id            String          @id @default(uuid())
-  session       Session         @relation(fields: [sessionId], references: [id], onDelete: Cascade)
-  sessionId     String
+  appSession    AppSession      @relation(fields: [appSessionId], references: [id], onDelete: Cascade)
+  appSessionId  String
   role          ChatRole
   message       String
   createdAt     DateTime        @default(now())
@@ -45,24 +49,22 @@ enum ChatRole {
 }
 
 model CodeSnapshot {
-  id         String     @id @default(uuid())
-  session    Session    @relation(fields: [sessionId], references: [id], onDelete: Cascade)
-  sessionId  String
-  chat       Chat       @relation(fields: [chatId], references: [id])
-  chatId     String     @unique
-  jsxCode    String?
-  cssCode    String?
-  createdAt  DateTime   @default(now())
+  id           String     @id @default(uuid())
+  appSession   AppSession @relation(fields: [appSessionId], references: [id], onDelete: Cascade)
+  appSessionId String
+  chat         Chat       @relation(fields: [chatId], references: [id])
+  chatId       String     @unique
+  jsxCode      String?
+  cssCode      String?
+  createdAt    DateTime   @default(now())
 }
 
-
-
 model UIState {
-  id        String   @id @default(uuid())
-  session   Session  @relation(fields: [sessionId], references: [id], onDelete: Cascade)
-  sessionId String
-  state     Json
-  updatedAt DateTime @updatedAt
+  id           String     @id @default(uuid())
+  appSession   AppSession @relation(fields: [appSessionId], references: [id], onDelete: Cascade)
+  appSessionId String
+  state        Json
+  updatedAt    DateTime   @updatedAt
 }
 
 
