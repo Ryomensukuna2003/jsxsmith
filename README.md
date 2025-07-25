@@ -13,7 +13,7 @@ This is a assignment for the Full Stack Developer Internship not a personal Proj
 ---
 
 
-## 💡 Features
+## Features
 
 - Responsive UI built with Next.js and Shadcn UI
 - Secure REST API with authentication
