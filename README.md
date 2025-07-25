@@ -1,5 +1,18 @@
 This is a assignment for the Full Stack Developer Internship not a personal Project.
 
+### TODO
+- Add button for new Project or appSession
+- Add button for new chat
+- Add Logic for autosave of chats
+- Add LLM integration for code generation
+- Add UI state management with Zustand
+
+Optional:
+- Add Light/Dark mode toggle
+- Add Redis caching for performance
+- Add Dockerfile for containerization
+
+
 ### Tech Stack
 
 - **Frontend**: Next.js, Shadcn UI, Tailwind CSS
