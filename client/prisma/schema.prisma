@@ -1,0 +1,68 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           String    @id @default(uuid()) // UUID is useful in distributed systems
+  email        String    @unique 
+  passwordHash String
+  sessions     Session[] // Each user can have multiple sessions
+  createdAt    DateTime  @default(now())
+}
+
+model Session {
+  id        String         @id @default(uuid()) // Session ID
+  user      User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId    String
+  name      String?
+  chats     Chat[]
+  snapshots CodeSnapshot[]
+  uiState   UIState[]
+  createdAt DateTime       @default(now())
+  updatedAt DateTime       @updatedAt
+}
+
+// Every chat message has its session ID to link it to a session
+model Chat {
+  id            String          @id @default(uuid())
+  session       Session         @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  sessionId     String
+  role          ChatRole
+  message       String
+  createdAt     DateTime        @default(now())
+  codeSnapshot  CodeSnapshot?
+}
+
+enum ChatRole {
+  user
+  ai
+}
+
+model CodeSnapshot {
+  id         String     @id @default(uuid())
+  session    Session    @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  sessionId  String
+  chat       Chat       @relation(fields: [chatId], references: [id])
+  chatId     String     @unique
+  jsxCode    String?
+  cssCode    String?
+  createdAt  DateTime   @default(now())
+}
+
+
+
+model UIState {
+  id        String   @id @default(uuid())
+  session   Session  @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  sessionId String
+  state     Json
+  updatedAt DateTime @updatedAt
+}
+
+

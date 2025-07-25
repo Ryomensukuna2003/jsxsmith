@@ -217,6 +217,12 @@ client/out/
 server/dist/
 server/build/
 
+# Prisma
+client/src/generated/
+**/prisma/migrations/
+.env
+.env.*
+
 # IDE and editor files
 .vscode/
 .idea/
