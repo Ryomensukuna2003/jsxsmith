@@ -4,13 +4,16 @@ This is a assignment for the Full Stack Developer Internship not a personal Proj
 - Add button for new Project or appSession
 - Add button for new chat
 - Add Logic for autosave of chats
-- Add LLM integration for code generation
+- Add LLM integration for code generation // Done
 - Add UI state management with Zustand
 
 Optional:
 - Add Light/Dark mode toggle
 - Add Redis caching for performance
 - Add Dockerfile for containerization
+
+### Fixes
+- Preview is working but code is not scrolling
 
 
 ### Tech Stack
