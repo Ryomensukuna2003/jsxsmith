@@ -17,7 +17,6 @@ Optional:
 
 
 ### Tech Stack
-
 - **Frontend**: Next.js, Shadcn UI, Tailwind CSS
 - **Backend**: Node.js
 - **Authentication**: OAuth with NextAuth.js

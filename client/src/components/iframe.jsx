@@ -23,18 +23,83 @@ const Iframe = ({
         root.render(<App />);
       `;
     } else {
-      // Wrap the code in an App component
-      return `
-        function App() {
-          return (
-            <div>
-              ${codeString}
-            </div>
-          );
+      // Check if this is a component definition with export
+      const componentMatch = codeString.match(
+        /(?:function|const)\s+([A-Z][a-zA-Z0-9]*)/
+      );
+      const exportMatch = codeString.match(
+        /export\s+default\s+([A-Z][a-zA-Z0-9]*);?/
+      );
+
+      let componentName = null;
+
+      // Try to get component name from function/const declaration
+      if (componentMatch) {
+        componentName = componentMatch[1];
+      }
+
+      // Or from export statement
+      if (exportMatch) {
+        componentName = exportMatch[1];
+      }
+
+      if (
+        componentName &&
+        (codeString.includes(`export default ${componentName}`) ||
+          codeString.includes(`export default ${componentName};`))
+      ) {
+        // Remove import statement if present
+        let cleanCode = codeString.replace(
+          /import\s+React\s+from\s+['"]react['"];\s*\n?/g,
+          ""
+        );
+
+        // Remove export statement (with or without semicolon)
+        cleanCode = cleanCode.replace(
+          /export\s+default\s+[A-Z][a-zA-Z0-9]*;?\s*$/gm,
+          ""
+        );
+
+        return `
+          ${cleanCode}
+          
+          function App() {
+            return <${componentName} />;
+          }
+          
+          const root = ReactDOM.createRoot(document.getElementById('root'));
+          root.render(<App />);
+        `;
+      } else {
+        // Check if it's just JSX without component wrapper
+        const trimmedCode = codeString.trim();
+        if (trimmedCode.startsWith("<") && trimmedCode.endsWith(">")) {
+          // It's raw JSX
+          return `
+            function App() {
+              return (
+                ${codeString}
+              );
+            }
+            const root = ReactDOM.createRoot(document.getElementById('root'));
+            root.render(<App />);
+          `;
+        } else {
+          // Fallback: treat as component code
+          return `
+            ${codeString}
+            function App() {
+              return (
+                <div>
+                  Component code executed above
+                </div>
+              );
+            }
+            const root = ReactDOM.createRoot(document.getElementById('root'));
+            root.render(<App />);
+          `;
         }
-        const root = ReactDOM.createRoot(document.getElementById('root'));
-        root.render(<App />);
-      `;
+      }
     }
   };
 

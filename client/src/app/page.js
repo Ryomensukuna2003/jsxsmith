@@ -191,8 +191,6 @@ function App() {
   );
 }`
     }
-
-
   ];
 
   // Copy to clipboard function
@@ -244,106 +242,105 @@ function App() {
   );
 }`
 
-
   return (
     <div className="flex flex-col h-screen bg-gray-50">
       {/* Nav Bar */}
       <div className="text-2xl border-2 flex justify-between p-2 bg-white">
         <div>JSXsmith</div>
         <div className="flex gap-4">
-          {
-            session ? (
-              <>
-                <div className="flex self-center text-gray-700 text-sm">Welcome, {session.user.name}</div>
-                <img
-                  src={session.user.image}
-                  alt="User Avatar"
-                  className="w-8 h-8 rounded-full"
-                />
-                <Button variant="outline" onClick={() => signOut()}>Logout</Button>
-              </>
-            ) : (
-              <Button variant="outline" onClick={() => signIn()}>Login</Button>
-            )
-          }
+          {session ? (
+            <>
+              <div className="flex self-center text-gray-700 text-sm">Welcome, {session.user.name}</div>
+              <img
+                src={session.user.image}
+                alt="User Avatar"
+                className="w-8 h-8 rounded-full"
+              />
+              <Button variant="outline" onClick={() => signOut()}>Logout</Button>
+            </>
+          ) : (
+            <Button variant="outline" onClick={() => signIn()}>Login</Button>
+          )}
         </div>
       </div>
 
-      <ResizablePanelGroup
-        direction="horizontal"
-        className="flex-1 overflow-hidden"
-      >
-        {/* Left Sidebar - Chat Interface */}
-        <ResizablePanel defaultSize={25} minSize={20} maxSize={40} className="bg-slate-900 text-white flex flex-col">
-          <div className="p-4 border-b border-slate-700">
-            <h1 className="text-lg font-semibold">AI Code Assistant</h1>
-            <p className="text-sm text-slate-300 mt-1">Generate React components instantly</p>
-          </div>
-
-          {/* Template Quick Actions */}
-          <div className="p-4 border-b border-slate-700">
-            <h3 className="text-sm font-medium text-slate-300 mb-3">Quick Templates</h3>
-            <div className="space-y-2">
-              {codeTemplates.map((template) => (
-                <button
-                  key={template.id}
-                  onClick={() => {
-                    setSelectedTemplate(template);
-                    setActiveTab("preview");
-                  }}
-                  className="w-full text-left p-2 text-sm bg-slate-800 hover:bg-slate-700 rounded transition-colors"
-                >
-                  {template.name}
-                </button>
-              ))}
+      {/* Main Content Area */}
+      <div className="flex-1 min-h-0">
+        <ResizablePanelGroup direction="horizontal" className="h-full">
+          {/* Left Sidebar - Chat Interface */}
+          <ResizablePanel defaultSize={25} minSize={20} maxSize={40} className="bg-slate-900 text-white flex flex-col">
+            <div className="p-4 border-b border-slate-700">
+              <h1 className="text-lg font-semibold">AI Code Assistant</h1>
+              <p className="text-sm text-slate-300 mt-1">Generate React components instantly</p>
             </div>
-          </div>
 
-          <ScrollArea className="flex-1 p-4">
-            <div className="space-y-4">
-              {messages.length === 0 && (
-                <div className="text-center text-slate-400 py-8">
-                  <Code className="h-8 w-8 mx-auto mb-3" />
-                  <p className="text-sm">Start a conversation to generate code</p>
-                </div>
-              )}
-              {messages.map((message) => (
-                <div
-                  key={message.id}
-                  className={`p-3 rounded-lg ${message.role === "user" ? "bg-blue-600 ml-4" : "bg-slate-700 mr-4"}`}>
-                  <div className="text-xs text-slate-300 mb-1">{message.role === "user" ? "You" : "AI"}</div>
-                  <div className="text-sm whitespace-pre-wrap">{message.content}</div>
-                </div>
-              ))}
-              {isLoading && (
-                <div className="bg-slate-700 mr-4 p-3 rounded-lg">
-                  <div className="text-xs text-slate-300 mb-1">AI</div>
-                  <div className="text-sm">Generating code...</div>
-                </div>
-              )}
+            {/* Template Quick Actions */}
+            <div className="p-4 border-b border-slate-700">
+              <h3 className="text-sm font-medium text-slate-300 mb-3">Quick Templates</h3>
+              <div className="space-y-2">
+                {codeTemplates.map((template) => (
+                  <button
+                    key={template.id}
+                    onClick={() => {
+                      setSelectedTemplate(template);
+                      setActiveTab("preview");
+                    }}
+                    className="w-full text-left p-2 text-sm bg-slate-800 hover:bg-slate-700 rounded transition-colors"
+                  >
+                    {template.name}
+                  </button>
+                ))}
+              </div>
             </div>
-          </ScrollArea>
 
-          <div className="p-4 border-t border-slate-700">
-            <form onSubmit={handleSubmit} className="flex gap-2">
-              <Input
-                value={input}
-                onChange={handleInputChange}
-                placeholder="Describe the component you want..."
-                className="flex-1 bg-slate-800 border-slate-600 text-white placeholder-slate-400" />
-              <Button type="submit" size="icon" disabled={isLoading}>
-                <Send className="h-4 w-4" />
-              </Button>
-            </form>
-          </div>
-        </ResizablePanel>
+            {/* Messages Area with Fixed ScrollArea */}
+            <div className="flex-1 min-h-0">
+              <ScrollArea className="h-full p-4">
+                <div className="space-y-4">
+                  {messages.length === 0 && (
+                    <div className="text-center text-slate-400 py-8">
+                      <Code className="h-8 w-8 mx-auto mb-3" />
+                      <p className="text-sm">Start a conversation to generate code</p>
+                    </div>
+                  )}
+                  {messages.map((message) => (
+                    <div
+                      key={message.id}
+                      className={`p-3 rounded-lg ${message.role === "user" ? "bg-blue-600 ml-4" : "bg-slate-700 mr-4"}`}>
+                      <div className="text-xs text-slate-300 mb-1">{message.role === "user" ? "You" : "AI"}</div>
+                      <div className="text-sm whitespace-pre-wrap">{message.content}</div>
+                    </div>
+                  ))}
+                  {isLoading && (
+                    <div className="bg-slate-700 mr-4 p-3 rounded-lg">
+                      <div className="text-xs text-slate-300 mb-1">AI</div>
+                      <div className="text-sm">Generating code...</div>
+                    </div>
+                  )}
+                </div>
+              </ScrollArea>
+            </div>
 
-        <ResizableHandle withHandle />
+            {/* Input Form */}
+            <div className="p-4 border-t border-slate-700">
+              <form onSubmit={handleSubmit} className="flex gap-2">
+                <Input
+                  value={input}
+                  onChange={handleInputChange}
+                  placeholder="Describe the component you want..."
+                  className="flex-1 bg-slate-800 border-slate-600 text-white placeholder-slate-400" />
+                <Button type="submit" size="icon" disabled={isLoading}>
+                  <Send className="h-4 w-4" />
+                </Button>
+              </form>
+            </div>
+          </ResizablePanel>
 
-        {/* Right Side - Preview/Code Area */}
-        <ResizablePanel defaultSize={75} className="flex flex-col overflow-hidden">
-          <div className="border-b bg-white p-2">
-            <div className="flex items-center justify-between">
+          <ResizableHandle withHandle />
+
+          {/* Right Side - Preview/Code Area */}
+          <ResizablePanel defaultSize={75} className="flex flex-col">
+            <div className="border-b bg-white p-2">
               <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
                 <TabsList className="grid w-full grid-cols-2 max-w-md">
                   <TabsTrigger value="preview" className="flex items-center gap-2">
@@ -355,11 +352,13 @@ function App() {
                     Code
                   </TabsTrigger>
                 </TabsList>
+              </Tabs>
+            </div>
 
-
-
-                <TabsContent value="preview" className="h-screen m-0">
-                  <div className="h-screen bg-white">
+            <div className="flex-1 min-h-0">
+              <Tabs value={activeTab} onValueChange={setActiveTab} className="h-full">
+                <TabsContent value="preview" className="h-full m-0">
+                  <div className="h-full bg-white">
                     {currentCode || defaultCode ? (
                       <Iframe
                         code={currentCode || defaultCode}
@@ -385,7 +384,7 @@ function App() {
                           variant="outline"
                           size="sm"
                           onClick={() => copyToClipboard(currentCode || defaultCode)}
-                          className="flex"
+                          className="flex items-center gap-2"
                         >
                           {copied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
                           {copied ? "Copied!" : "Copy"}
@@ -419,11 +418,10 @@ function App() {
                   </div>
                 </TabsContent>
               </Tabs>
-
             </div>
-          </div>
-        </ResizablePanel>
-      </ResizablePanelGroup>
+          </ResizablePanel>
+        </ResizablePanelGroup>
+      </div>
     </div>
   );
 }
