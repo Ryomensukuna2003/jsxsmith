@@ -10,37 +10,36 @@ datasource db {
 
 // Simplified User model
 model User {
-  id            String    @id @default(cuid())
+  id            String         @id @default(cuid())
   name          String?
-  email         String?   @unique
+  email         String?        @unique
   image         String?
-  createdAt     DateTime  @default(now())
+  createdAt     DateTime       @default(now())
   
   // Your app-specific relations
-  appSessions   AppSession[]
+  conversations Conversation[]
 }
 
 // Your App-Specific Models
-model AppSession {
+model Conversation {
   id        String         @id @default(uuid())
   user      User           @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId    String
   name      String?
   chats     Chat[]
   snapshots CodeSnapshot[]
-  uiState   UIState[]
   createdAt DateTime       @default(now())
   updatedAt DateTime       @updatedAt
 }
 
 model Chat {
-  id            String          @id @default(uuid())
-  appSession    AppSession      @relation(fields: [appSessionId], references: [id], onDelete: Cascade)
-  appSessionId  String
-  role          ChatRole
-  message       String
-  createdAt     DateTime        @default(now())
-  codeSnapshot  CodeSnapshot?
+  id              String         @id @default(uuid())
+  conversation    Conversation   @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  conversationId  String
+  role            ChatRole
+  message         String
+  createdAt       DateTime       @default(now())
+  codeSnapshot    CodeSnapshot?
 }
 
 enum ChatRole {
@@ -49,22 +48,12 @@ enum ChatRole {
 }
 
 model CodeSnapshot {
-  id           String     @id @default(uuid())
-  appSession   AppSession @relation(fields: [appSessionId], references: [id], onDelete: Cascade)
-  appSessionId String
-  chat         Chat       @relation(fields: [chatId], references: [id])
-  chatId       String     @unique
-  jsxCode      String?
-  cssCode      String?
-  createdAt    DateTime   @default(now())
+  id             String       @id @default(uuid())
+  conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  conversationId String
+  chat           Chat         @relation(fields: [chatId], references: [id])
+  chatId         String       @unique
+  jsxCode        String?
+  cssCode        String?
+  createdAt      DateTime     @default(now())
 }
-
-model UIState {
-  id           String     @id @default(uuid())
-  appSession   AppSession @relation(fields: [appSessionId], references: [id], onDelete: Cascade)
-  appSessionId String
-  state        Json
-  updatedAt    DateTime   @updatedAt
-}
-
-

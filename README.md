@@ -1,14 +1,11 @@
 This is a assignment for the Full Stack Developer Internship not a personal Project.
 
 ### TODO
-- Add button for new Project or appSession
-- Add button for new chat
+- Add DB logic for new Conversation
 - Add Logic for autosave of chats
-- Add LLM integration for code generation // Done
 - Add UI state management with Zustand
 
 Optional:
-- Add Light/Dark mode toggle
 - Add Redis caching for performance
 - Add Dockerfile for containerization
 
@@ -39,12 +36,11 @@ Optional:
 
 ### Flow Example
 - User logs in → get user.id
-- User clicks “New Session” → insert into sessions
+- User clicks “New Conversation” → insert into conversations
 - User chats → insert into chats
 - AI replies → insert into chats
 - AI generates JSX → update code_snapshots
-- UI/editor state changes → update ui_state
-- On next user session → fetch session, chats, code, UI state → hydrate Zustand
+- On next user session → fetch session, chats, code → hydrate Zustand
 ### Database Schema
 ![DBschema](DBSchema.png)
 
