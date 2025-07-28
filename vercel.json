@@ -1,0 +1,8 @@
+{
+  "buildCommand": "prisma generate && next build",
+  "functions": {
+    "app/**/*.js": {
+      "includeFiles": "prisma/**"
+    }
+  }
+}
