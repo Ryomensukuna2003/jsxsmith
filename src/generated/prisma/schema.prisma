@@ -1,0 +1,59 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// Simplified User model
+model User {
+  id        String   @id @default(cuid())
+  name      String?
+  email     String?  @unique
+  image     String?
+  createdAt DateTime @default(now())
+
+  // Your app-specific relations
+  conversations Conversation[]
+}
+
+// Your App-Specific Models
+model Conversation {
+  id        String         @id @default(uuid())
+  user      User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId    String
+  name      String?
+  chats     Chat[]
+  snapshots CodeSnapshot[]
+  createdAt DateTime       @default(now())
+  updatedAt DateTime       @updatedAt
+}
+
+model Chat {
+  id             String        @id @default(uuid())
+  conversation   Conversation  @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  conversationId String
+  role           ChatRole
+  message        String
+  createdAt      DateTime      @default(now())
+  codeSnapshot   CodeSnapshot?
+}
+
+enum ChatRole {
+  user
+  ai
+}
+
+model CodeSnapshot {
+  id             String       @id @default(uuid())
+  conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  conversationId String
+  chat           Chat         @relation(fields: [chatId], references: [id])
+  chatId         String       @unique
+  jsxCode        String?
+  cssCode        String?
+  createdAt      DateTime     @default(now())
+}
