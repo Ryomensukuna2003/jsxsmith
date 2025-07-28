@@ -128,7 +128,7 @@ const Iframe = ({
               * { box-sizing: border-box; }
             </style>
           </head>
-          <body>
+          <body class="flex items-center justify-center min-h-screen">
             <div id="root"></div>
             <script type="text/babel">
               // Make React hooks available globally
@@ -155,7 +155,7 @@ const Iframe = ({
         </html>
       `}
       className={className}
-      sandbox="allow-scripts allow-same-origin"
+      sandbox="allow-scripts"
       title={title}
       {...props}
     />

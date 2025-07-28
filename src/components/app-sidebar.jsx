@@ -69,7 +69,9 @@ export function AppSidebar({
             className="mt-4 w-full group-data-[collapsible=icon]:h-8 group-data-[collapsible=icon]:w-8 group-data-[collapsible=icon]:p-0"
           >
             <Plus className="h-4 w-4" />
-            <span className="group-data-[collapsible=icon]:sr-only">New Conversation</span>
+            <span className="group-data-[collapsible=icon]:sr-only">
+              New Conversation
+            </span>
           </Button>
         </div>
       </SidebarHeader>
@@ -96,59 +98,85 @@ export function AppSidebar({
               ) : (
                 conversations.map((conversation) => (
                   <SidebarMenuItem key={conversation.id}>
-                    <SidebarMenuButton
-                      onClick={() => onConversationSelect(conversation.id)}
-                      isActive={currentConversation?.id === conversation.id}
-                      className="group relative w-full justify-start h-12"
-                    >
-                      <MessageSquare className="h-4 w-4 shrink-0" />
-                      <div className="flex-1 min-w-0 group-data-[collapsible=icon]:hidden">
+                    <div className="group relative w-full">
+                      <SidebarMenuButton
+                        onClick={() => onConversationSelect(conversation.id)}
+                        isActive={currentConversation?.id === conversation.id}
+                        className="w-full justify-start h-12 pr-16"
+                      >
+                        <MessageSquare className="h-4 w-4 shrink-0" />
+                        <div className="flex-1 min-w-0 group-data-[collapsible=icon]:hidden">
+                          {editingConversationId === conversation.id ? (
+                            <div className="flex items-center gap-1">
+                              <span className="text-sm font-medium truncate">
+                                {editingName || "Untitled Conversation"}
+                              </span>
+                            </div>
+                          ) : (
+                            <>
+                              <div className="text-sm font-medium truncate">
+                                {conversation.name || "Untitled Conversation"}
+                              </div>
+                              <div className="text-xs text-muted-foreground">
+                                {conversation._count?.chats || 0} messages
+                              </div>
+                            </>
+                          )}
+                        </div>
+                      </SidebarMenuButton>
+
+                      {/* Action buttons outside of SidebarMenuButton to avoid nested buttons */}
+                      <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 flex gap-1 group-data-[collapsible=icon]:hidden">
                         {editingConversationId === conversation.id ? (
-                          <div className="flex items-center gap-1" onClick={(e) => e.stopPropagation()}>
-                            <Input
-                              value={editingName}
-                              onChange={(e) => setEditingName(e.target.value)}
-                              className="h-6 text-xs"
-                              onKeyDown={(e) => {
-                                if (e.key === 'Enter') saveConversationName()
-                                if (e.key === 'Escape') setEditingConversationId(null)
-                              }}
-                              autoFocus
-                            />
-                            <Button size="sm" variant="ghost" className="h-6 w-6 p-0" onClick={saveConversationName}>
+                          <>
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              className="h-6 w-6 p-0"
+                              onClick={saveConversationName}
+                            >
                               <Check className="h-3 w-3" />
                             </Button>
-                          </div>
+                          </>
                         ) : (
                           <>
-                            <div className="text-sm font-medium truncate pr-8">
-                              {conversation.name || 'Untitled Conversation'}
-                            </div>
-                            <div className="text-xs text-muted-foreground">
-                              {conversation._count?.chats || 0} messages
-                            </div>
-                            <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 flex gap-1">
-                              <Button
-                                size="sm"
-                                variant="ghost"
-                                className="h-6 w-6 p-0"
-                                onClick={(e) => handleRename(conversation.id, e)}
-                              >
-                                <Edit className="h-3 w-3" />
-                              </Button>
-                              <Button
-                                size="sm"
-                                variant="ghost"
-                                className="h-6 w-6 p-0"
-                                onClick={(e) => handleDelete(conversation.id, e)}
-                              >
-                                <Trash2 className="h-3 w-3" />
-                              </Button>
-                            </div>
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              className="h-6 w-6 p-0"
+                              onClick={(e) => handleRename(conversation.id, e)}
+                            >
+                              <Edit className="h-3 w-3" />
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              className="h-6 w-6 p-0"
+                              onClick={(e) => handleDelete(conversation.id, e)}
+                            >
+                              <Trash2 className="h-3 w-3" />
+                            </Button>
                           </>
                         )}
                       </div>
-                    </SidebarMenuButton>
+
+                      {/* Editing input field positioned absolutely */}
+                      {editingConversationId === conversation.id && (
+                        <div className="absolute inset-2 bg-background border rounded p-1 group-data-[collapsible=icon]:hidden">
+                          <Input
+                            value={editingName}
+                            onChange={(e) => setEditingName(e.target.value)}
+                            className="h-6 text-xs"
+                            onKeyDown={(e) => {
+                              if (e.key === "Enter") saveConversationName();
+                              if (e.key === "Escape")
+                                setEditingConversationId(null);
+                            }}
+                            autoFocus
+                          />
+                        </div>
+                      )}
+                    </div>
                   </SidebarMenuItem>
                 ))
               )}
@@ -157,5 +185,5 @@ export function AppSidebar({
         </SidebarGroup>
       </SidebarContent>
     </Sidebar>
-  )
+  );
 }
