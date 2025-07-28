@@ -161,7 +161,7 @@ const config = {
       "value": "prisma-client-js"
     },
     "output": {
-      "value": "/home/sukuna/Desktop/AccioJob/client/src/generated/prisma",
+      "value": "/home/sukuna/Desktop/AccioJob/src/generated/prisma",
       "fromEnvVar": null
     },
     "config": {
@@ -172,10 +172,18 @@ const config = {
         "fromEnvVar": null,
         "value": "debian-openssl-3.0.x",
         "native": true
+      },
+      {
+        "fromEnvVar": null,
+        "value": "debian-openssl-3.0.x"
+      },
+      {
+        "fromEnvVar": null,
+        "value": "rhel-openssl-3.0.x"
       }
     ],
     "previewFeatures": [],
-    "sourceFilePath": "/home/sukuna/Desktop/AccioJob/client/prisma/schema.prisma",
+    "sourceFilePath": "/home/sukuna/Desktop/AccioJob/prisma/schema.prisma",
     "isCustomOutput": true
   },
   "relativeEnvPaths": {
@@ -198,8 +206,8 @@ const config = {
       }
     }
   },
-  "inlineSchema": "generator client {\n  provider = \"prisma-client-js\"\n  output   = \"../src/generated/prisma\"\n}\n\ndatasource db {\n  provider = \"postgresql\"\n  url      = env(\"DATABASE_URL\")\n}\n\n// Simplified User model\nmodel User {\n  id        String   @id @default(cuid())\n  name      String?\n  email     String?  @unique\n  image     String?\n  createdAt DateTime @default(now())\n\n  // Your app-specific relations\n  conversations Conversation[]\n}\n\n// Your App-Specific Models\nmodel Conversation {\n  id        String         @id @default(uuid())\n  user      User           @relation(fields: [userId], references: [id], onDelete: Cascade)\n  userId    String\n  name      String?\n  chats     Chat[]\n  snapshots CodeSnapshot[]\n  createdAt DateTime       @default(now())\n  updatedAt DateTime       @updatedAt\n}\n\nmodel Chat {\n  id             String        @id @default(uuid())\n  conversation   Conversation  @relation(fields: [conversationId], references: [id], onDelete: Cascade)\n  conversationId String\n  role           ChatRole\n  message        String\n  createdAt      DateTime      @default(now())\n  codeSnapshot   CodeSnapshot?\n}\n\nenum ChatRole {\n  user\n  ai\n}\n\nmodel CodeSnapshot {\n  id             String       @id @default(uuid())\n  conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)\n  conversationId String\n  chat           Chat         @relation(fields: [chatId], references: [id])\n  chatId         String       @unique\n  jsxCode        String?\n  cssCode        String?\n  createdAt      DateTime     @default(now())\n}\n",
-  "inlineSchemaHash": "26cf64001bbe5eea4b66739196db81c5553188195a16817566b806efaa9c11c4",
+  "inlineSchema": "generator client {\n  provider      = \"prisma-client-js\"\n  output        = \"../src/generated/prisma\"\n  binaryTargets = [\"native\", \"debian-openssl-3.0.x\", \"rhel-openssl-3.0.x\"]\n}\n\ndatasource db {\n  provider = \"postgresql\"\n  url      = env(\"DATABASE_URL\")\n}\n\n// Simplified User model\nmodel User {\n  id        String   @id @default(cuid())\n  name      String?\n  email     String?  @unique\n  image     String?\n  createdAt DateTime @default(now())\n\n  // Your app-specific relations\n  conversations Conversation[]\n}\n\n// Your App-Specific Models\nmodel Conversation {\n  id        String         @id @default(uuid())\n  user      User           @relation(fields: [userId], references: [id], onDelete: Cascade)\n  userId    String\n  name      String?\n  chats     Chat[]\n  snapshots CodeSnapshot[]\n  createdAt DateTime       @default(now())\n  updatedAt DateTime       @updatedAt\n}\n\nmodel Chat {\n  id             String        @id @default(uuid())\n  conversation   Conversation  @relation(fields: [conversationId], references: [id], onDelete: Cascade)\n  conversationId String\n  role           ChatRole\n  message        String\n  createdAt      DateTime      @default(now())\n  codeSnapshot   CodeSnapshot?\n}\n\nenum ChatRole {\n  user\n  ai\n}\n\nmodel CodeSnapshot {\n  id             String       @id @default(uuid())\n  conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)\n  conversationId String\n  chat           Chat         @relation(fields: [chatId], references: [id])\n  chatId         String       @unique\n  jsxCode        String?\n  cssCode        String?\n  createdAt      DateTime     @default(now())\n}\n",
+  "inlineSchemaHash": "dd664daaf9de9901fe39a972ba9819090cff959b39f5973967b70652af596fbd",
   "copyEngine": true
 }
 config.dirname = '/'
