@@ -1,5 +1,8 @@
 import { streamText } from "ai"
 import { google } from "@ai-sdk/google"
+import { getServerSession } from 'next-auth/next'
+import { authOptions } from '@/lib/auth'
+import { prisma } from '@/lib/prisma'
 
 export const maxDuration = 30
 
@@ -10,7 +13,36 @@ export async function POST(req) {
       return new Response("Google AI API key not configured", { status: 500 })
     }
 
-    const { messages } = await req.json()
+    const session = await getServerSession(authOptions)
+
+    if (!session || !session.user) {
+      return new Response("Unauthorized", { status: 401 })
+    }
+
+    const { messages, conversationId } = await req.json()
+
+    // Find user by email
+    const user = await prisma.user.findUnique({
+      where: { email: session.user.email }
+    })
+
+    if (!user) {
+      return new Response("User not found", { status: 404 })
+    }
+
+    // Verify conversation belongs to user if conversationId provided
+    if (conversationId) {
+      const conversation = await prisma.conversation.findFirst({
+        where: {
+          id: conversationId,
+          userId: user.id
+        }
+      })
+
+      if (!conversation) {
+        return new Response("Conversation not found", { status: 404 })
+      }
+    }
 
     const result = streamText({
       model: google("gemini-2.0-flash-lite", {

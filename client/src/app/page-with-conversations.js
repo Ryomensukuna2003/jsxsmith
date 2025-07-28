@@ -20,14 +20,10 @@ import { codeTemplates, defaultCode } from "@/lib/codeTemplates"
 import { useConversations } from "@/hooks/useConversations"
 import { extractCodeFromMessage, generateConversationName, formatMessagesForAI } from "@/lib/conversationUtils"
 import { toast } from "sonner"
-import { AppSidebar } from "@/components/app-sidebar"
-import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar"
-import NavBar from "@/components/navBar"
-import Markdown from 'react-markdown'
 
 export default function AICodeInterface() {
   const { data: session } = useSession()
-
+  
   // Conversation management
   const {
     conversations,
@@ -90,12 +86,12 @@ export default function AICodeInterface() {
       // Convert stored chats to the format expected by useChat
       const chatMessages = formatMessagesForAI(conversation.chats)
       setMessages(chatMessages)
-
+      
       // Find the latest code from the conversation
       const latestCodeSnapshot = conversation.chats
         .reverse()
         .find(chat => chat.codeSnapshot?.jsxCode)
-
+      
       if (latestCodeSnapshot) {
         setGeneratedCode(latestCodeSnapshot.codeSnapshot.jsxCode)
       } else {
@@ -111,7 +107,7 @@ export default function AICodeInterface() {
       signIn()
       return
     }
-
+    
     const conversation = await createConversation()
     if (conversation) {
       setMessages([])
@@ -123,7 +119,7 @@ export default function AICodeInterface() {
   // Enhanced form submit that saves to database
   const handleFormSubmit = async (e) => {
     e.preventDefault()
-
+    
     if (!session) {
       toast.error("Please sign in to generate code")
       signIn()
@@ -198,75 +194,175 @@ export default function AICodeInterface() {
   const currentCode = getCurrentCode()
 
   return (
-    <SidebarProvider>
-      <div className="flex h-screen w-full">
-        <AppSidebar
-          conversations={conversations}
-          currentConversation={currentConversation}
-          loading={loading}
-          session={session}
-          onNewConversation={handleNewConversation}
-          onConversationSelect={handleConversationSelect}
-          onDeleteConversation={handleDeleteConversation}
-          onRenameConversation={updateConversationName}
-        />
+    <div className="flex flex-col h-screen bg-background">
+      {/* Header */}
+      <div className="border-b bg-card p-4 flex justify-between items-center">
+        <div>
+          <h1 className="text-xl font-semibold">JSX Smith - AI Code Assistant</h1>
+          <p className="text-sm text-muted-foreground">Generate React components instantly</p>
+        </div>
+        <div className="flex items-center gap-2">
+          {session ? (
+            <div className="flex items-center gap-2">
+              <span className="text-sm text-muted-foreground">{session.user.email}</span>
+              <Button variant="outline" size="sm" onClick={() => signOut()}>
+                Sign Out
+              </Button>
+            </div>
+          ) : (
+            <Button onClick={() => signIn()}>Sign In</Button>
+          )}
+        </div>
+      </div>
 
-        <SidebarInset className="flex flex-col flex-1 min-w-0">
-          {/* Header */}
-          <NavBar />
-          {/* Main Content Area */}
-          <div className="flex-1 min-h-0">
-            <ResizablePanelGroup direction="horizontal" className="h-full">
-              {/* Chat Interface Panel */}
-              <ResizablePanel defaultSize={35} minSize={25} maxSize={50} className="bg-card flex flex-col border-r">
-                {/* Template Quick Actions */}
-                <div className="p-4 border-b">
-                  <h3 className="text-sm font-medium text-muted-foreground mb-3">Quick Templates</h3>
-                  <div className="space-y-2">
-                    {codeTemplates.map((template) => (
-                      <button
-                        key={template.id}
-                        onClick={() => {
-                          setSelectedTemplate(template)
-                          setActiveTab("preview")
-                        }}
-                        className="w-full text-left p-2 text-sm bg-muted hover:bg-muted/80 rounded-lg transition-colors"
-                      >
-                        {template.name}
-                      </button>
-                    ))}
+      {/* Main Content Area */}
+      <div className="flex-1 min-h-0">
+        <ResizablePanelGroup direction="horizontal" className="h-full">
+          {/* Left Sidebar - Conversations */}
+          <ResizablePanel defaultSize={20} minSize={15} maxSize={30} className="bg-sidebar text-sidebar-foreground flex flex-col border-r">
+            {/* Conversations Header */}
+            <div className="p-4 border-b border-sidebar-border">
+              <div className="flex items-center justify-between">
+                <h2 className="font-semibold">Conversations</h2>
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  onClick={handleNewConversation}
+                  disabled={!session}
+                >
+                  <Plus className="h-4 w-4" />
+                </Button>
+              </div>
+            </div>
+
+            {/* Conversations List */}
+            <ScrollArea className="flex-1">
+              <div className="p-2 space-y-1">
+                {loading ? (
+                  <div className="text-center text-muted-foreground py-4">
+                    <div className="text-sm">Loading conversations...</div>
                   </div>
-                </div>
+                ) : conversations.length === 0 ? (
+                  <div className="text-center text-muted-foreground py-4">
+                    <MessageSquare className="h-8 w-8 mx-auto mb-2 opacity-50" />
+                    <div className="text-sm">No conversations yet</div>
+                    {session && (
+                      <div className="text-xs mt-1">Click + to start</div>
+                    )}
+                  </div>
+                ) : (
+                  conversations.map((conversation) => (
+                    <div
+                      key={conversation.id}
+                      className={`group relative p-3 rounded-lg cursor-pointer transition-colors ${
+                        currentConversation?.id === conversation.id
+                          ? 'bg-sidebar-accent text-sidebar-accent-foreground'
+                          : 'hover:bg-sidebar-accent/50'
+                      }`}
+                      onClick={() => handleConversationSelect(conversation.id)}
+                    >
+                      {editingConversationId === conversation.id ? (
+                        <div className="flex items-center gap-1" onClick={(e) => e.stopPropagation()}>
+                          <Input
+                            value={editingName}
+                            onChange={(e) => setEditingName(e.target.value)}
+                            className="h-6 text-xs"
+                            onKeyDown={(e) => {
+                              if (e.key === 'Enter') saveConversationName()
+                              if (e.key === 'Escape') setEditingConversationId(null)
+                            }}
+                            autoFocus
+                          />
+                          <Button size="sm" variant="ghost" className="h-6 w-6 p-0" onClick={saveConversationName}>
+                            <Check className="h-3 w-3" />
+                          </Button>
+                        </div>
+                      ) : (
+                        <>
+                          <div className="text-sm font-medium truncate pr-8">
+                            {conversation.name || 'Untitled Conversation'}
+                          </div>
+                          <div className="text-xs text-muted-foreground mt-1">
+                            {conversation._count?.chats || 0} messages
+                          </div>
+                          <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 flex gap-1">
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              className="h-6 w-6 p-0"
+                              onClick={(e) => handleRenameConversation(conversation.id, e)}
+                            >
+                              <Edit className="h-3 w-3" />
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              className="h-6 w-6 p-0"
+                              onClick={(e) => handleDeleteConversation(conversation.id, e)}
+                            >
+                              <Trash2 className="h-3 w-3" />
+                            </Button>
+                          </div>
+                        </>
+                      )}
+                    </div>
+                  ))
+                )}
+              </div>
+            </ScrollArea>
+          </ResizablePanel>
 
-                {/* Messages Area */}
+          <ResizableHandle withHandle />
+
+          {/* Middle Panel - Chat Interface */}
+          <ResizablePanel defaultSize={35} minSize={25} maxSize={50} className="bg-card flex flex-col border-r">
+            {/* Template Quick Actions */}
+            <div className="p-4 border-b">
+              <h3 className="text-sm font-medium text-muted-foreground mb-3">Quick Templates</h3>
+              <div className="space-y-2">
+                {codeTemplates.map((template) => (
+                  <button
+                    key={template.id}
+                    onClick={() => {
+                      setSelectedTemplate(template)
+                      setActiveTab("preview")
+                    }}
+                    className="w-full text-left p-2 text-sm bg-muted hover:bg-muted/80 rounded-lg transition-colors"
+                  >
+                    {template.name}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Messages Area */}
             <div className="flex-1 min-h-0">
               <ScrollArea className="h-full p-4">
                 <div className="space-y-4">
                   {messages.length === 0 && (
-                        <div className="text-center text-muted-foreground py-8">
+                    <div className="text-center text-muted-foreground py-8">
                       <Code className="h-8 w-8 mx-auto mb-3" />
                       <p className="text-sm">Start a conversation to generate code</p>
                     </div>
                   )}
-                      {messages.map((message, index) => (
+                  {messages.map((message) => (
                     <div
-                          key={message.id || `message-${index}`}
-                          className={`p-3 rounded-lg ${message.role === "user"
-                            ? "bg-primary text-primary-foreground ml-4"
-                            : "bg-muted mr-4"
-                            }`}
-                        >
-                          <div className="text-xs opacity-70 mb-1">
-                            {message.role === "user" ? "You" : "AI"}
-                          </div>
-                          <div className="text-sm whitespace-pre-wrap">
-                            <Markdown >{message.content}</Markdown>
-                          </div>
+                      key={message.id}
+                      className={`p-3 rounded-lg ${
+                        message.role === "user"
+                          ? "bg-primary text-primary-foreground ml-4"
+                          : "bg-muted mr-4"
+                      }`}
+                    >
+                      <div className="text-xs opacity-70 mb-1">
+                        {message.role === "user" ? "You" : "AI"}
+                      </div>
+                      <div className="text-sm whitespace-pre-wrap">{message.content}</div>
                     </div>
                   ))}
                   {isLoading && (
-                        <div className="bg-muted mr-4 p-3 rounded-lg">
-                          <div className="text-xs opacity-70 mb-1">AI</div>
+                    <div className="bg-muted mr-4 p-3 rounded-lg">
+                      <div className="text-xs opacity-70 mb-1">AI</div>
                       <div className="text-sm">Generating code...</div>
                     </div>
                   )}
@@ -275,32 +371,32 @@ export default function AICodeInterface() {
             </div>
 
             {/* Input Form */}
-                <div className="p-4 border-t">
-                  <form onSubmit={handleFormSubmit} className="flex gap-2">
+            <div className="p-4 border-t">
+              <form onSubmit={handleFormSubmit} className="flex gap-2">
                 <Input
                   value={input}
                   onChange={handleInputChange}
                   placeholder="Describe the component you want..."
-                      className="flex-1"
-                      disabled={!session}
-                    />
-                    <Button type="submit" size="icon" disabled={isLoading || !session}>
+                  className="flex-1"
+                  disabled={!session}
+                />
+                <Button type="submit" size="icon" disabled={isLoading || !session}>
                   <Send className="h-4 w-4" />
                 </Button>
               </form>
-                  {!session && (
-                    <p className="text-xs text-muted-foreground mt-2">
-                      Please sign in to start generating code
-                    </p>
-                  )}
+              {!session && (
+                <p className="text-xs text-muted-foreground mt-2">
+                  Please sign in to start generating code
+                </p>
+              )}
             </div>
           </ResizablePanel>
 
           <ResizableHandle withHandle />
 
-              {/* Right Panel - Preview/Code Area */}
-              <ResizablePanel defaultSize={45} className="flex flex-col bg-card">
-                <div className="border-b p-4">
+          {/* Right Panel - Preview/Code Area */}
+          <ResizablePanel defaultSize={45} className="flex flex-col bg-card">
+            <div className="border-b p-4">
               <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
                 <TabsList className="grid w-full grid-cols-2 max-w-md">
                   <TabsTrigger value="preview" className="flex items-center gap-2">
@@ -318,7 +414,7 @@ export default function AICodeInterface() {
             <div className="flex-1 min-h-0">
               <Tabs value={activeTab} onValueChange={setActiveTab} className="h-full">
                 <TabsContent value="preview" className="h-full m-0">
-                      <div className="h-full bg-card">
+                  <div className="h-full bg-card">
                     {currentCode || defaultCode ? (
                       <Iframe
                         code={currentCode || defaultCode}
@@ -326,9 +422,9 @@ export default function AICodeInterface() {
                         title="React Component Preview"
                       />
                     ) : (
-                            <div className="h-full flex items-center justify-center text-muted-foreground">
+                      <div className="h-full flex items-center justify-center text-muted-foreground">
                         <div className="text-center">
-                                <Code className="h-12 w-12 mx-auto mb-4 text-muted-foreground/50" />
+                          <Code className="h-12 w-12 mx-auto mb-4 text-muted-foreground/50" />
                           <p>Ask the AI to generate React code to see the preview here</p>
                         </div>
                       </div>
@@ -337,14 +433,14 @@ export default function AICodeInterface() {
                 </TabsContent>
 
                 <TabsContent value="code" className="h-full m-0">
-                      <div className="h-full bg-muted relative">
+                  <div className="h-full bg-muted relative">
                     <div className="absolute top-4 right-4 z-10">
                       {(currentCode || defaultCode) && (
                         <Button
                           variant="outline"
                           size="sm"
                           onClick={() => copyToClipboard(currentCode || defaultCode)}
-                              className="flex items-center gap-2 bg-card/80 backdrop-blur-sm"
+                          className="flex items-center gap-2 bg-card/80 backdrop-blur-sm"
                         >
                           {copied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
                           {copied ? "Copied!" : "Copy"}
@@ -367,9 +463,9 @@ export default function AICodeInterface() {
                         {currentCode || defaultCode}
                       </SyntaxHighlighter>
                     ) : (
-                            <div className="h-full flex items-center justify-center text-muted-foreground">
+                      <div className="h-full flex items-center justify-center text-muted-foreground">
                         <div className="text-center">
-                                <Code className="h-12 w-12 mx-auto mb-4 text-muted-foreground/50" />
+                          <Code className="h-12 w-12 mx-auto mb-4 text-muted-foreground/50" />
                           <p>Generated code will appear here</p>
                         </div>
                       </div>
@@ -380,9 +476,7 @@ export default function AICodeInterface() {
             </div>
           </ResizablePanel>
         </ResizablePanelGroup>
-          </div>
-        </SidebarInset>
       </div>
-    </SidebarProvider>
+    </div>
   )
 }

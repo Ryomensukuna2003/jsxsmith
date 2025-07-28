@@ -4,6 +4,7 @@ This is a assignment for the Full Stack Developer Internship not a personal Proj
 - Add DB logic for new Conversation
 - Add Logic for autosave of chats
 - Add UI state management with Zustand
+- Image support for AI responses
 
 Optional:
 - Add Redis caching for performance
@@ -52,3 +53,4 @@ DB Local setup
     npx prisma generate
     npx prisma studio
 ```
+
