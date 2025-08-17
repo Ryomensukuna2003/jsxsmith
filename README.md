@@ -1,3 +1,7 @@
+
+> [!IMPORTANT]  
+> This won't work as i deleted database for this project but you can still run it locally
+
 This is a assignment for the Full Stack Developer Internship not a personal Project.
 
 ### TODO
